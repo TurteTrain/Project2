@@ -88,26 +88,27 @@ public:
 
     //breadth first search
     std::vector<std::vector<int>> breadth_search(int start, int target){
+        std::vector<std::vector<int>> localpaths;
         std::unordered_set<int> localvisited;
         std::vector<int> toSearch = {start};
         std::vector<int> nextLevel;
         bool search = true;
 
-        breadthNode root = breadthNode(start, nullptr);
-        breadthNode* currentNode = &root;
-        std::vector<breadthNode> parentNodes = {root};
+        breadthNode* root = new breadthNode(start, nullptr);
+        breadthNode* currentNode = root;
+        std::vector<breadthNode*> parentNodes = {root};
         int i = 0;
 
         while (search) {
-            std::vector<breadthNode> childrenNodes;
+            std::vector<breadthNode*> childrenNodes;
             for (int current: toSearch) {
                     std::vector<int> children = get_children(current);
-                    currentNode = &parentNodes.at(i);
+                    currentNode = parentNodes.at(i);
                     i++;
                     for (int child: children) {
-                        breadthNode childNode = breadthNode(child, currentNode);
+                        breadthNode* childNode = new breadthNode(child, currentNode);
                         if (child == target) {
-                            childNode.marked = true;
+                            childNode->marked = true;
                             childrenNodes.push_back(childNode);
                             nextLevel.push_back(child);
                             search = false;
@@ -117,6 +118,9 @@ public:
                             nextLevel.push_back(child);
                             localvisited.insert(current);
                         }
+                        else {
+                            delete childNode;
+                        }
                     }
             }
             toSearch = nextLevel;
@@ -125,26 +129,27 @@ public:
                 search = false;
             }
             if (search) {
-                parentNodes.clear();
                 parentNodes = childrenNodes;
             }
         }
         //parent nodes will now contain all nodes of level where target was found
         //we now have to build each path
-        for (breadthNode node: parentNodes) {
-            if (node.marked = true) {
+        for (breadthNode* node: parentNodes) {
+            if (node->marked = true) {
                 std::vector<int> tempPath;
-                while (node.parent) { //while its parent isnt nullptr
-                    tempPath.push_back(node.value);
-                    node = node.parent;
+                while (node->parent) { //while its parent isnt nullptr
+                    tempPath.push_back(node->value);
+                    node = node->parent;
                 }
+                localpaths.push_back(tempPath);
             }
         }
 
-        //clean up and return (placeholder)
-        std::vector<std::vector<int>> pathscopy = paths;
-        paths.clear();
-        return pathscopy;
+        //WIP deletion
+
+        //------------
+
+        return localpaths;
     }
 
 };
