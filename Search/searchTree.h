@@ -93,25 +93,51 @@ public:
         std::vector<int> nextLevel;
         bool search = true;
 
-        //WIP!!!!
+        breadthNode root = breadthNode(start, nullptr);
+        breadthNode* currentNode = &root;
+        std::vector<breadthNode> parentNodes = {root};
+        int i = 0;
 
         while (search) {
+            std::vector<breadthNode> childrenNodes;
             for (int current: toSearch) {
-
                     std::vector<int> children = get_children(current);
+                    currentNode = &parentNodes.at(i);
+                    i++;
                     for (int child: children) {
+                        breadthNode childNode = breadthNode(child, currentNode);
                         if (child == target) {
-                            //wip code
+                            childNode.marked = true;
+                            childrenNodes.push_back(childNode);
+                            nextLevel.push_back(child);
                             search = false;
                         }
                         else if (!localvisited.count(child)) {
+                            childrenNodes.push_back(childNode);
+                            nextLevel.push_back(child);
                             localvisited.insert(current);
                         }
                     }
             }
             toSearch = nextLevel;
+            i = 0;
             if (toSearch.size() == 0) {
                 search = false;
+            }
+            if (search) {
+                parentNodes.clear();
+                parentNodes = childrenNodes;
+            }
+        }
+        //parent nodes will now contain all nodes of level where target was found
+        //we now have to build each path
+        for (breadthNode node: parentNodes) {
+            if (node.marked = true) {
+                std::vector<int> tempPath;
+                while (node.parent) { //while its parent isnt nullptr
+                    tempPath.push_back(node.value);
+                    node = node.parent;
+                }
             }
         }
 
