@@ -1,6 +1,20 @@
 For Data:
 - set up SQL server
 - parse Wikipedia sql table dumps into binary files
-  - 
+  - links.bin
+    - handled in the searches
+  - links_offsets.bin
+    - handled in the searches
+  - articles.bin (names of articles)
+    - handled in Rust GUI
+  - articles_offsets.bin
+    - handled in Rust GUI
 For Algorithms:
 - optimize memory management in the searches
+
+Ideas:
+- Categories
+  - look into for extra time
+  - stored in categories table? in pages table???
+  - would be in seperate files?
+    - potentially takes up too much space
