@@ -1,0 +1,6 @@
+For Data:
+- set up SQL server
+- parse Wikipedia sql table dumps into binary files
+  - 
+For Algorithms:
+- optimize memory management in the searches
