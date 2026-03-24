@@ -99,6 +99,9 @@ public:
         std::vector<breadthNode*> parentNodes = {root};
         int i = 0;
 
+        //for deletion
+        std::vector<breadthNode*> deletionQueue = {root};
+
         while (search) {
             std::vector<breadthNode*> childrenNodes;
             for (int current: toSearch) {
@@ -111,12 +114,14 @@ public:
                             childNode->marked = true;
                             childrenNodes.push_back(childNode);
                             nextLevel.push_back(child);
+                            deletionQueue.push_back(childNode);
                             search = false;
                         }
                         else if (!localvisited.count(child)) {
                             childrenNodes.push_back(childNode);
                             nextLevel.push_back(child);
                             localvisited.insert(current);
+                            deletionQueue.push_back(childNode);
                         }
                         else {
                             delete childNode;
@@ -145,8 +150,10 @@ public:
             }
         }
 
-        //WIP deletion
-
+        //deletion
+        for (breadthNode* node: deletionQueue) {
+            delete node;
+        }
         //------------
 
         return localpaths;
