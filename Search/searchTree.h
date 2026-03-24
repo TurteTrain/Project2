@@ -4,6 +4,7 @@
 #include <set>
 #include <unordered_set>
 #include <iostream>
+#include <climits>
 
 struct searchTree{
 private:
@@ -20,17 +21,51 @@ private:
         breadthNode(int _value, breadthNode* _parent): value(_value), parent(_parent){}
     };
 
-    //possibily future function that gets data
-    //for now it is a placeholder
+
+    //temporary vector to pass in for testing
+    std::vector<std::vector<int>> testVec;
+
     std::vector<int> get_children(int parent) {
-        std::vector<int> returnVec;
+        std::vector<int> returnVec = testVec.at(parent);
         return returnVec;
     }
 
+    //PRIVATE HELPER
+    void depth_helper(std::vector<int>& v, std::unordered_set<int>& visited, int curdepth, int current, int target) {
+        //tap out checks
+        if (curdepth > shortestpath) { return; }
+        if (visited.count(current)) { return; } //if count != 0
 
+        //node visit is allowed
+        v.push_back(current);
 
+        //if found target
+        if (current == target) {
+            //new shortest path
+            if (curdepth < shortestpath) {
+                shortestpath = curdepth;
+                paths.clear();
+            }
+            paths.push_back(v);
+            v.pop_back(); //remove target from list and keep searching
+            return;
+        }
+
+        //recurse
+        visited.insert(current);
+        std::vector<int> children = get_children(current);
+        for (int child: children) {
+            depth_helper(v, visited, curdepth + 1, child, target);
+        }
+        //wrap up recurse
+        visited.erase(current);
+        v.pop_back();
+    }
 
 public:
+    explicit searchTree(std::vector<std::vector<int>>& testV){
+        testVec = testV;
+    }
     searchTree()= default;
     ~searchTree() = default;
 
@@ -55,41 +90,11 @@ public:
         paths.clear();
         return pathscopy;
     }
-    void depth_helper(std::vector<int>& v, std::unordered_set<int>& vis, int curdepth, int current, int target) {
-        //tap out checks
-        if (curdepth > shortestpath) { return; }
-        if (vis.count(current)) { return; } //if count != 0
-
-        //node visit is allowed
-        v.push_back(current);
-
-        //if found target
-        if (current == target) {
-            //new shortest path
-            if (curdepth < shortestpath) {
-                shortestpath = curdepth;
-                paths.clear();
-            }
-            paths.push_back(v);
-            v.pop_back(); //remove target from list and keep searching
-            return;
-        }
-
-        //recurse
-        vis.insert(current);
-        std::vector<int> children = get_children(current);
-        for (int child: children) {
-            depth_helper(v, vis, curdepth + 1, target, child);
-        }
-        //wrap up recurse
-        vis.erase(current);
-        v.pop_back();
-    }
 
     //breadth first search
     std::vector<std::vector<int>> breadth_search(int start, int target){
         std::vector<std::vector<int>> localpaths;
-        std::unordered_set<int> localvisited;
+        std::unordered_set<int> localvisited = {start};
         std::vector<int> toSearch = {start};
         std::vector<int> nextLevel;
         bool search = true;
@@ -120,7 +125,7 @@ public:
                         else if (!localvisited.count(child)) {
                             childrenNodes.push_back(childNode);
                             nextLevel.push_back(child);
-                            localvisited.insert(current);
+                            localvisited.insert(child);
                             deletionQueue.push_back(childNode);
                         }
                         else {
@@ -129,20 +134,19 @@ public:
                     }
             }
             toSearch = nextLevel;
+            nextLevel.clear();
             i = 0;
             if (toSearch.size() == 0) {
                 search = false;
             }
-            if (search) {
-                parentNodes = childrenNodes;
-            }
+            parentNodes = childrenNodes;
         }
         //parent nodes will now contain all nodes of level where target was found
         //we now have to build each path
         for (breadthNode* node: parentNodes) {
-            if (node->marked = true) {
+            if (node->marked == true) {
                 std::vector<int> tempPath;
-                while (node->parent) { //while its parent isnt nullptr
+                while (node) { //while node isn't nullptr
                     tempPath.push_back(node->value);
                     node = node->parent;
                 }
@@ -158,5 +162,4 @@ public:
 
         return localpaths;
     }
-
 };
