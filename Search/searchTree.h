@@ -162,4 +162,16 @@ public:
 
         return localpaths;
     }
+
+    std::vector<std::vector<int>> reverse_list(const std::vector<std::vector<int>>& v) {
+        std::vector<std::vector<int>> retVec;
+        for (std::vector<int> path: v) {
+            std::vector<int> tempPath;
+            for (int i = path.size() - 1; i >= 0; i--) {
+                tempPath.push_back(path.at(i));
+            }
+            retVec.push_back(tempPath);
+        }
+        return retVec;
+    }
 };

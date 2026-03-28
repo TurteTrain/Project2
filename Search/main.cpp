@@ -1,4 +1,5 @@
 #include "searchTree.h"
+#include "timer.h"
 
 void printPath(std::vector<std::vector<int>> v) {
     for (int i = 0; i < v.size(); i++) {
@@ -35,34 +36,46 @@ int main(){
         {62,97,34}, {20,69,48} };
 
     searchTree searcher(testingGraph);
+    timer Timer;
+    Timer.startTimer();
+    Timer.pause();
+
 
     //many path 0->84
     std::cout << "SHORTEST PATH FROM " << 0 << " TO " << 24 << std::endl;
     std::cout << "depth" << std::endl;
+
+    Timer.unpause();
     printPath(searcher.depth_search(0, 24));
     std::cout << "breadth" << std::endl;
-    printPath(searcher.breadth_search(0, 24));
+    printPath(searcher.reverse_list(searcher.breadth_search(0, 24)));
+    Timer.printTime();
+    Timer.pause();
 
     //long path 3->96
     std::cout << "SHORTEST PATH FROM " << 3 << " TO " << 96 << std::endl;
     std::cout << "depth" << std::endl;
+
+    Timer.unpause();
     printPath(searcher.depth_search(3, 96));
     std::cout << "breadth" << std::endl;
-    printPath(searcher.breadth_search(3, 96));
+    printPath(searcher.reverse_list(searcher.breadth_search(3, 96)));
+    Timer.printTime();
+    Timer.pause();
 
     //shallow 10->73
     std::cout << "SHORTEST PATH FROM " << 10 << " TO " << 73 << std::endl;
     std::cout << "depth" << std::endl;
     printPath(searcher.depth_search(10, 73));
     std::cout << "breadth" << std::endl;
-    printPath(searcher.breadth_search(10, 73));
+    printPath(searcher.reverse_list(searcher.breadth_search(10, 73)));
 
     //deep 15 41
     std::cout << "SHORTEST PATH FROM " << 15 << " TO " << 41 << std::endl;
     std::cout << "depth" << std::endl;
     printPath(searcher.depth_search(15, 41));
     std::cout << "breadth" << std::endl;
-    printPath(searcher.breadth_search(15, 41));
+    printPath(searcher.reverse_list(searcher.breadth_search(15, 41)));
 
 
     return 0;
