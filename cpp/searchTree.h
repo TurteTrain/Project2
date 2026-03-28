@@ -5,10 +5,10 @@
 #include <unordered_set>
 #include <iostream>
 #include <climits>
+#include "../cpp/link_data.hpp"
 
 struct searchTree{
 private:
-
     //kept global for depth search
     int shortestpath = INT_MAX;
     std::vector<std::vector<int>> paths;
@@ -21,12 +21,15 @@ private:
         breadthNode(int _value, breadthNode* _parent): value(_value), parent(_parent){}
     };
 
+    GraphParents graph_parent;
 
-    //temporary vector to pass in for testing
-    std::vector<std::vector<int>> testVec;
+    std::vector<int> get_parents(int id) {
+        std::vector<int> returnVec;
+        auto parents = graph_parent[id];
+        for (auto parent: parents) {
+            returnVec.push_back(static_cast<uint32_t>(parent));
+        }
 
-    std::vector<int> get_children(int parent) {
-        std::vector<int> returnVec = testVec.at(parent);
         return returnVec;
     }
 
@@ -53,7 +56,7 @@ private:
 
         //recurse
         visited.insert(current);
-        std::vector<int> children = get_children(current);
+        std::vector<int> children = get_parents(current);
         for (int child: children) {
             depth_helper(v, visited, curdepth + 1, child, target);
         }
@@ -63,10 +66,9 @@ private:
     }
 
 public:
-    explicit searchTree(std::vector<std::vector<int>>& testV){
-        testVec = testV;
-    }
-    searchTree()= default;
+    explicit searchTree() : graph_parent("../../db/links.bin", "../../db/link_offsets.bin") {}
+
+    //searchTree()= default;
     ~searchTree() = default;
 
     //---------------------------------------------------------------------------------------------
@@ -110,7 +112,7 @@ public:
         while (search) {
             std::vector<breadthNode*> childrenNodes;
             for (int current: toSearch) {
-                    std::vector<int> children = get_children(current);
+                    std::vector<int> children = get_parents(current);
                     currentNode = parentNodes.at(i);
                     i++;
                     for (int child: children) {

@@ -22,11 +22,11 @@ mod ffi {
 
         include!("wiki-solve/cpp/link_data.hpp");
 
-        fn test();
+        fn maincpp();
     }
 }
 
-pub use ffi::test;
+pub use ffi::maincpp;
 
 /// Specific LinkData type from UnsizedDataFile generics for cpp interoperability
 type LinkData<'a> = UnsizedDataFile<'a, [u8; 3], usize>;

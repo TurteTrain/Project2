@@ -1,4 +1,6 @@
-#include "link_data.hpp"
+#include "../cpp/searchTree.h"
+#include "../cpp/timer.h"
+
 
 uint24_t::operator uint32_t() const {
   return (static_cast<uint32_t>(bytes[0])) |
@@ -6,34 +8,45 @@ uint24_t::operator uint32_t() const {
          (static_cast<uint32_t>(bytes[2]) << 16);
 }
 
-void ffi::test() {
-  GraphParents graph_parents =
-      GraphParents("db/articles.bin", "db/article_offsets.bin");
-
-  // The indexing functions all return ranges. The types get long, so use auto.
-
-  auto test1 = graph_parents[34]; // We can input any uint24_t or any int type
-                                  // of size >= 3 bytes safely
-  auto test2 = graph_parents[test1]; // We can pass Article 34's parents in and
-                                     // get all of their parents too
-  auto test3 = graph_parents[test2]; // We can pass Articl34's parents' parents
-                                     // and get all of their parents too!
-  // We can do this indefinitely. You don't need to manually iterate through to
-  // query for children and you don't need to copy any values
-
-  // We can iterate over the results with a for-each loop
-  //
-  for (uint32_t id : test1) {
-    std::cout << "id: " << id << '\n';
-  }
-
-  for (uint32_t id : test2) {
-    std::cout << "id: " << id << '\n';
-  }
-
-  for (uint32_t id : test3) {
-    std::cout << "id: " << id << '\n';
-  }
+void ffi::maincpp() {
+    searchTree searcher = searchTree();
+    bool run = true;
+    std::string input;
+    std::string input2;
+    std::string input3;
+    while (run) {
+        std::cout << "0: Exit - 1: Search\n";
+        std::cin >> input;
+        if (std::stoi(input) == 0) {
+            run = false;
+        }
+        else if (std::stoi(input) == 1){
+            std::cout << "Input first ID:\n";
+            std::cin >> input;
+            std::cout << "Input second IDL \n";
+            std::cin >> input2;
+            std::cout << "0: Depth - 1: Breadth\n";
+            std::cin >> input3;
+            timer Timer;
+            Timer.startTimer();
+            std::vector<std::vector<int>> paths;
+            if (std::stoi(input3) == 0) {
+                paths = searcher.depth_search(std::stoi(input), std::stoi(input2));
+            }
+            else if (std::stoi(input3) == 1) {
+                paths = searcher.reverse_list(searcher.breadth_search(std::stoi(input), std::stoi(input2)));
+            }
+            Timer.printTime();
+            for (int i = 0; i < paths.size(); i++) {
+                std::cout << "Path #" << i + 1 << ": " << std::endl;
+                for (int num: paths.at(i)) {
+                    std::cout << num << " ";
+                }
+                std::cout << "\n";
+            }
+        }
+        std::cout << "Cycle complete \n\n";
+    }
 }
 
 GraphParents::GraphParents(rust::Str data_path, rust::Str offsets_path)

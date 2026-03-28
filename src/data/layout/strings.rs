@@ -71,7 +71,7 @@ impl<'a, O: AsIndex> Index<usize> for UnsizedDataFile<'a, str, O> {
 //
 impl<'a> UnsizedDataFile<'a, u8, MiniStringRef> {
     pub fn convert() {
-        let file = File::open("./db/words.txt").unwrap();
+        let file = File::open("../db/words.txt").unwrap();
         let mmap = unsafe { Mmap::map(&file).unwrap() };
 
         let mut offsets = mmap
@@ -81,8 +81,8 @@ impl<'a> UnsizedDataFile<'a, u8, MiniStringRef> {
             .map(|(offset, _)| offset)
             .chain(std::iter::once(mmap.len()));
 
-        let offset_file = File::create("./db/word_offsets_32.bin").unwrap();
-        let string_file = File::create("./db/compressed_words_2.bin").unwrap();
+        let offset_file = File::create("../../../../db/word_offsets_32.bin").unwrap();
+        let string_file = File::create("../../../../db/compressed_words_2.bin").unwrap();
 
         let mut offset_buffer = BufWriter::new(offset_file);
         let mut string_buffer = BufWriter::new(string_file);

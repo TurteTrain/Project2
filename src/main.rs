@@ -106,7 +106,7 @@ fn theme(state: &State) -> Option<Theme> {
 }
 
 fn main() {
-    data::test();
+    data::maincpp();
     let app = iced::application(boot, update, view);
     app.theme(theme).run().expect("Application failed to run");
 
