@@ -129,15 +129,15 @@ void read_links_binary(std::uint32_t id) {
 
   std::uint32_t offset = 0;
   std::uint32_t next_offset = 0;
-  offsets_file.seekg(id * sizeof(offset));
+  offsets_file.seekg((id) * sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&next_offset), sizeof(next_offset));
-  
+  std::cout << "OFFSET" << std::to_string(offset) << std::endl;
+  std::cout << "NEXT_OFFSET" << std::to_string(next_offset) << std::endl;
   links_file.seekg(offset, std::ios::beg);
   std::size_t length = (next_offset - offset) / 3;
-  
   std::vector<std::uint32_t> links(length);
-  std::cout << "length_bytes " << links.size() << std::endl;
+  std::cout << "length " << links.size() << std::endl;
 
   for(std::size_t i = 0; i < length; ++i) {
     unsigned char bytes[3];
@@ -163,6 +163,15 @@ std::uint32_t find_first_id(const std::string& line) {
   return static_cast<uint32_t>(std::stoi(line.substr(c2 + 1, end - c2)));
 }
 
+void print_binary() {
+  std::ifstream links_file("links.bin", std::ios::binary);
+  std::ifstream offsets_file("link_offsets.bin", std::ios::binary);
+  std::uint32_t offset = 0;
+  for(int i = 0; i < 10; ++i) {
+    offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+    std::cout << offset << std::endl;
+  } 
+}
 void parse_pagelinks() {
   std::ifstream file("enwiki-20260301-pagelinks.sql");
   std::ofstream  links_file("links.bin", std::ios::binary);
@@ -176,12 +185,13 @@ void parse_pagelinks() {
 
   std::uint32_t real_position = 0;
   std::uint32_t offset_position = 0;
-  size_t last_id = find_first_id(line);
+  size_t last_id = 2; //find_first_id(line);
   std::cout << std::to_string(last_id);
   
+
+  std::vector<std::uint32_t> links;
   
-  while(getline(file, line)) {
-    std::vector<std::uint32_t> links;
+  do {
     std::size_t pos = 0;
     while((pos = line.find('(', pos)) != std::string::npos) {
       std::size_t end = line.find(')', pos);
@@ -227,25 +237,31 @@ void parse_pagelinks() {
       pos = end + 1;
 	 
     }
-    // dumps the remaining links
-    for(std::uint32_t id : links) {
-      std::uint32_t mask = id & 0xFFFFFF;
-      unsigned char bytes[3];
-      bytes[0] = mask & 0xFF;
-      bytes[1] = (mask >> 8) & 0xFF;
-      bytes[2] = (mask >> 16) & 0xFF;
-      links_file.write(reinterpret_cast<char*>(bytes), 3);
-    }
-    while(real_position <= last_id) {
-      offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
-      real_position++;
-    }
+  }
+  while(std::getline(file, line));
+  
+  // dumps the remaining links
+  for(std::uint32_t id : links) {
+    std::uint32_t mask = id & 0xFFFFFF;
+    unsigned char bytes[3];
+    bytes[0] = mask & 0xFF;
+    bytes[1] = (mask >> 8) & 0xFF;
+    bytes[2] = (mask >> 16) & 0xFF;
+    links_file.write(reinterpret_cast<char*>(bytes), 3);
+  }
+  while(real_position <= last_id) {
+    offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
+    real_position++;
   }
 }
  
 int main() {
   //parse_pages();
-  parse_pagelinks();
+  //parse_pagelinks();
+  print_binary();
   read_links_binary(2);
+  //std::vector<std::uint32_t> vec = {1, 2, 3, 4, 5};
+  //vec.clear();
+  //std::cout << vec.size();
   return 0;
 }
