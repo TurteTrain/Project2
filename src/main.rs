@@ -15,15 +15,112 @@ use frizbee::Match;
 use frizbee::{Config, match_list_parallel};
 use std::time::Instant;
 
+use enum_dispatch::enum_dispatch;
+
+use iced::alignment::{Horizontal, Vertical};
+use iced::widget::{container, text, text_input};
+use iced::{Element, Length, Theme};
+
+enum Message {}
+
+struct State {
+    view: Views,
+    theme: Theme,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            view: SearchPanelView {}.into(),
+            theme: Theme::Dark,
+        }
+    }
+}
+
+#[enum_dispatch]
+enum Views {
+    SearchView,
+    SearchPanelView,
+    SearchDiagramView,
+}
+
+#[enum_dispatch(Views)]
+trait View<Message> {
+    fn view(&self) -> Element<'_, Message>;
+}
+
+struct SearchView {
+    panel_view: SearchPanelView,
+    diagram_view: SearchDiagramView,
+}
+
+impl View<Message> for SearchView {
+    fn view(&self) -> Element<'_, Message> {
+        self.panel_view.view()
+    }
+}
+
+struct SearchPanelView {}
+
+fn search_bar(value: &str) -> Element<'_, Message> {
+    //container(text_input("Enter Wikipedia Article Title or URL", value)).into()
+    todo!()
+}
+
+impl View<Message> for SearchPanelView {
+    fn view(&self) -> Element<'_, Message> {
+        container(
+            text("please donate")
+                .align_x(Horizontal::Center)
+                .align_y(Vertical::Center),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .align_x(Horizontal::Center)
+        .align_y(Vertical::Center)
+        .into()
+    }
+}
+
+struct SearchDiagramView {}
+
+impl View<Message> for SearchDiagramView {
+    fn view(&self) -> Element<'_, Message> {
+        todo!()
+    }
+}
+
+// Application functions
+fn boot() -> State {
+    State::default()
+}
+
+fn update(state: &mut State, message: Message) {}
+
+fn view(state: &State) -> Element<'_, Message> {
+    state.view.view()
+}
+
+fn theme(state: &State) -> Option<Theme> {
+    Some(state.theme.clone())
+}
+
 fn main() {
+    data::test();
+    let app = iced::application(boot, update, view);
+    app.theme(theme).run().expect("Application failed to run");
+
     // data::FileData::<u8, data::MiniStringRef>::convert();
 
-    WORD_STRINGS.with(|test| println!("{}", &test[234]));
+    /*
+    for i in 0..50000 {
+        WORD_STRINGS.with(|test| println!("{}", test.offsets[i].as_ref()));
+    }
 
-    let needle = "rhinoce";
+    let needle = "Cherno";
 
-    let config = Config::default();
-    //config.max_typos = Some(1);
+    let mut config = Config::default();
+    config.max_typos = Some(0);
 
     let mut elapsed: Option<Duration> = None;
     let mut matches: Option<Vec<Match>> = None;
@@ -37,10 +134,6 @@ fn main() {
 
     let elapsed = elapsed.unwrap();
 
-    /*
-    let closest_match =
-        WORD_STRINGS.with(|test| &unsafe { test.as_slice() }[matches[0].index as usize]);*/
-
     let matches = matches.unwrap();
 
     let match_str_iter = matches
@@ -49,7 +142,7 @@ fn main() {
         .map(|(i, mat)| {
             (
                 i + 1,
-                WORD_STRINGS.with(|test| test[mat.index as usize].to_owned()),
+                WORD_STRINGS.with(|test| test.offsets[mat.index as usize].as_ref().to_owned()),
             )
         })
         .rev();
@@ -58,4 +151,5 @@ fn main() {
         println!("{i}. {}\n", match_str);
     }
     println!("nanos elapsed: {}", elapsed.as_nanos());
+    */
 }

@@ -2,10 +2,42 @@ use core::marker::Sized;
 use core::mem::transmute;
 use core::ops::Deref;
 use core::{debug_assert_eq, marker, slice};
+use i24::U24;
 use marker::PhantomData;
 use memmap2::Mmap;
 use std::fs::File;
 use std::path::Path;
+
+#[cxx::bridge(namespace = "ffi")]
+mod ffi {
+    extern "Rust" {
+        type LinkData<'a>;
+
+        unsafe fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkData<'a>>;
+
+        unsafe fn index<'a>(link_data: &'a LinkData, index: usize) -> &'a [[u8; 3]];
+    }
+
+    unsafe extern "C++" {
+
+        include!("wiki-solve/cpp/link_data.hpp");
+
+        fn test();
+    }
+}
+
+pub use ffi::test;
+
+/// Specific LinkData type from UnsizedDataFile generics for cpp interoperability
+type LinkData<'a> = UnsizedDataFile<'a, [u8; 3], usize>;
+
+fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkData<'a>> {
+    Box::new(LinkData::from_path(data_path, offsets_path))
+}
+
+fn index<'a>(link_data: &'a LinkData, index: usize) -> &'a [[u8; 3]] {
+    &link_data[index]
+}
 
 /// Represents data from files that store either a contigous list of:
 /// A) Unsized entries (e.g., str)
