@@ -15,7 +15,7 @@ mod ffi {
 
         unsafe fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkData<'a>>;
 
-        unsafe fn index<'a>(link_data: &'a LinkData, index: usize) -> &'a [[u8; 3]];
+        unsafe fn index<'a>(link_data: *const LinkData<'a>, index: usize) -> &'a [[u8; 3]];
     }
 
     unsafe extern "C++" {
@@ -31,12 +31,12 @@ pub use ffi::test;
 /// Specific LinkData type from UnsizedDataFile generics for cpp interoperability
 type LinkData<'a> = UnsizedDataFile<'a, [u8; 3], usize>;
 
-fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkData<'a>> {
+unsafe fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkData<'a>> {
     Box::new(LinkData::from_path(data_path, offsets_path))
 }
 
-fn index<'a>(link_data: &'a LinkData, index: usize) -> &'a [[u8; 3]] {
-    &link_data[index]
+unsafe fn index<'a>(link_data: *const LinkData<'a>, index: usize) -> &'a [[u8; 3]] {
+    &(unsafe { &*link_data })[index]
 }
 
 /// Represents data from files that store either a contigous list of:
