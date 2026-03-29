@@ -65,6 +65,7 @@ private:
         v.pop_back();
     }
 
+
 public:
     explicit searchTree() : graph_parent("db/links.bin", "db/link_offsets.bin") {}
 
