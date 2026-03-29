@@ -10,5 +10,5 @@ use core::str;
 // Static Thread-wide Variables
 thread_local! {
     pub static WORD_STRINGS: UnsizedDataFile<'static, str, MiniStringRef> =
-        UnsizedDataFile::from_path("../../../db/links.bin", "../../../db/link_offsets.bin");
+        UnsizedDataFile::from_path("db/links.bin", "db/link_offsets.bin");
 }

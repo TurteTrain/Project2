@@ -1,5 +1,5 @@
-#include "searchTree.h"
-#include "timer.h"
+#include "../cpp/searchTree.h"
+#include "../cpp/timer.h"
 
 void printPath(std::vector<std::vector<int>> v) {
     for (int i = 0; i < v.size(); i++) {

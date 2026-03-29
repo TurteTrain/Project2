@@ -66,7 +66,7 @@ private:
     }
 
 public:
-    explicit searchTree() : graph_parent("../../db/links.bin", "../../db/link_offsets.bin") {}
+    explicit searchTree() : graph_parent("db/links.bin", "db/link_offsets.bin") {}
 
     //searchTree()= default;
     ~searchTree() = default;
@@ -103,7 +103,7 @@ public:
 
         breadthNode* root = new breadthNode(start, nullptr);
         breadthNode* currentNode = root;
-        std::vector<breadthNode*> parentNodes = {root};
+        std::vector<breadthNode*> parentNodes;
         int i = 0;
 
         //for deletion
@@ -138,7 +138,7 @@ public:
             toSearch = nextLevel;
             nextLevel.clear();
             i = 0;
-            if (toSearch.size() == 0) {
+            if (toSearch.empty()) {
                 search = false;
             }
             parentNodes = childrenNodes;
@@ -160,6 +160,7 @@ public:
         for (breadthNode* node: deletionQueue) {
             delete node;
         }
+        delete root;
         //------------
 
         return localpaths;

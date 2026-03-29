@@ -6,4 +6,8 @@ fn main() {
 
     println!("cargo:rerun-if-changed=cpp/link_data.cpp");
     println!("cargo:rerun-if-changed=cpp/link_data.hpp");
+    println!("cargo:rerun-if-changed=cpp/searchTree.h");
+    println!("cargo:rerun-if-changed=cpp/timer.h");
+
+
 }
