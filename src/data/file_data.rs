@@ -35,7 +35,7 @@ unsafe fn from_path<'a>(data_path: &'a str, offsets_path: &'a str) -> Box<LinkDa
     Box::new(LinkData::from_path(data_path, offsets_path))
 }
 
-unsafe fn index<'a>(link_data: *const LinkData<'a>, index: ) -> &'a [[u8; 3]] {
+unsafe fn index<'a>(link_data: *const LinkData<'a>, index: usize) -> &'a [[u8; 3]] {
     &(unsafe { &*link_data })[index]
 }
 
