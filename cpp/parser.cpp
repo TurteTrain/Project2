@@ -125,6 +125,25 @@ std::string Parser::get_title(std::uint32_t id) {
   return title;
 }
 
+std::uint32_t Parser::get_id(const std::string& title) {
+  std::ifstream articles_file("./db/articles.bin", std::ios::binary);
+  std::ifstream offsets_file("./db/article_offsets.bin", std::ios::binary);
+  if(!(articles_file && offsets_file)) {
+    std::cout << "ERROR opening files" << std::endl;
+    return 0;
+  }
+
+  return 0;
+  /*
+  std::uint32_t offset = 0;
+  uint8_t length = 0;
+  std::uint32_t id = 0;
+  std::string title(l
+  while(articles.read(&title[0], length);
+  */
+}
+
+
 // internal test method
 std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
   std::ifstream links_file("./db/links.bin", std::ios::binary);
@@ -136,6 +155,7 @@ std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
     std::cout << "ERROR opening files" << std::endl;
     return links;
   }
+  
   std::uint32_t offset = 0;
   std::uint32_t next_offset = 0;
   offsets_file.seekg((id) * sizeof(offset));
@@ -144,14 +164,16 @@ std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
   links_file.seekg(offset, std::ios::beg);
   
   std::size_t length = (next_offset - offset) / 3;
-
+  std::cout << "CHILD: " << get_title(id) << std::endl;
   for(std::size_t i = 0; i < length; ++i) {
     unsigned char bytes[3];
     links_file.read(reinterpret_cast<char*>(bytes), 3);
 
     std::uint32_t from_id = (std::uint32_t(bytes[0])) | (std::uint32_t(bytes[1]) << 8) | (std::uint32_t(bytes[2]) << 16);
     links.push_back(from_id);
+    std::cout << "Parent: " << get_title(from_id) << std::endl;
   }
+  std::cout << "\n\n" << links.size() << std::endl;
   return links;
 }
 
@@ -253,4 +275,15 @@ void Parser::parse_pagelinks() {
     offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
     real_position++;
   }
+}
+
+void Parser::make_file_smaller() {
+  std::ifstream input_file("enwiki-20260301-pagelinks.sql");
+  std::ofstream  links_file("output.txt", std::ios::binary);
+  std::string line;
+  do {
+    std::getline(input_file, line);
+    links_file << line << std::endl;
+  }
+  while(line.find("INSERT") == std::string::npos);
 }
