@@ -106,8 +106,8 @@ void Parser::parse_pages() {
 
 // internal test method
 std::string Parser::get_title(std::uint32_t id) {
-  std::ifstream articles_file("../db/articles.bin", std::ios::binary);
-  std::ifstream offsets_file("../db/article_offsets.bin", std::ios::binary);
+  std::ifstream articles_file("./db/articles.bin", std::ios::binary);
+  std::ifstream offsets_file("./db/article_offsets.bin", std::ios::binary);
 
   if(!(articles_file && offsets_file)) {
     std::cout << "ERROR opening files" << std::endl;
@@ -127,13 +127,14 @@ std::string Parser::get_title(std::uint32_t id) {
 
 // internal test method
 std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
-  std::ifstream links_file("../db/links.bin", std::ios::binary);
-  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
+  std::ifstream links_file("./db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("./db/link_offsets.bin", std::ios::binary);
 
   std::vector<std::uint32_t> links;
   
   if(!(links_file && offsets_file)) {
     std::cout << "ERROR opening files" << std::endl;
+    return links;
   }
   std::uint32_t offset = 0;
   std::uint32_t next_offset = 0;
@@ -143,7 +144,6 @@ std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
   links_file.seekg(offset, std::ios::beg);
   
   std::size_t length = (next_offset - offset) / 3;
-  std::vector<std::uint32_t> links;
 
   for(std::size_t i = 0; i < length; ++i) {
     unsigned char bytes[3];
