@@ -6,7 +6,7 @@
 #include <iostream>
 #include <climits>
 //#include "../cpp/link_data.hpp"
-#include "parser.h"
+#include "../cpp/parser.h"
 
 struct searchTree{
 private:
