@@ -1,11 +1,12 @@
 #include "../cpp/searchTree.h"
-#include "../cpp/timer.h"
+#include "../cpp/parser.h"
 
-void printPath(std::vector<std::vector<int>> v) {
+void printPath(std::vector<std::vector<std::uint32_t>> v) {
+  Parser parser;
     for (int i = 0; i < v.size(); i++) {
         std::cout << "Path #" << i + 1 << ": " << std::endl;
-        for (int num: v.at(i)) {
-            std::cout << num << " ";
+        for (std::uint32_t num: v.at(i)) {
+	  std::cout << num << ": " << parser.get_title(num) << std::endl;
         }
         std::cout << "\n";
     }
@@ -35,47 +36,48 @@ int main(){
         {60,36,16}, {93,25,48}, {34,62,89}, {20,69,48}, {97,65,63},
         {62,97,34}, {20,69,48} };
 
-    searchTree searcher(testingGraph);
-    timer Timer;
-    Timer.startTimer();
-    Timer.pause();
-
+    searchTree searcher;
+    //timer Timer;
+    //Timer.startTimer();
+    //Timer.pause();
+    Parser parser;
 
     //many path 0->84
     std::cout << "SHORTEST PATH FROM " << 0 << " TO " << 24 << std::endl;
     std::cout << "depth" << std::endl;
 
-    Timer.unpause();
-    printPath(searcher.depth_search(0, 24));
-    std::cout << "breadth" << std::endl;
-    printPath(searcher.reverse_list(searcher.breadth_search(0, 24)));
-    Timer.printTime();
-    Timer.pause();
+    //Timer.unpause();
+    printPath(searcher.breadth_search(9228, 22834));
+    printPath(searcher.breadth_search(223834, 9228));
+    //std::cout << "breadth" << std::endl;
+    //printPath(searcher.reverse_list(searcher.breadth_search(2, )));
+    //Timer.printTime();
+    //Timer.pause();
 
     //long path 3->96
-    std::cout << "SHORTEST PATH FROM " << 3 << " TO " << 96 << std::endl;
-    std::cout << "depth" << std::endl;
+    //std::cout << "SHORTEST PATH FROM " << 3 << " TO " << 96 << std::endl;
+    //std::cout << "depth" << std::endl;
 
-    Timer.unpause();
-    printPath(searcher.depth_search(3, 96));
-    std::cout << "breadth" << std::endl;
-    printPath(searcher.reverse_list(searcher.breadth_search(3, 96)));
-    Timer.printTime();
-    Timer.pause();
+    //Timer.unpause();
+    //printPath(searcher.depth_search(3, 96));
+    //std::cout << "breadth" << std::endl;
+    //printPath(searcher.reverse_list(searcher.breadth_search(3, 96)));
+    //Timer.printTime();
+    //Timer.pause();
 
     //shallow 10->73
-    std::cout << "SHORTEST PATH FROM " << 10 << " TO " << 73 << std::endl;
-    std::cout << "depth" << std::endl;
-    printPath(searcher.depth_search(10, 73));
-    std::cout << "breadth" << std::endl;
-    printPath(searcher.reverse_list(searcher.breadth_search(10, 73)));
+    //std::cout << "SHORTEST PATH FROM " << 10 << " TO " << 73 << std::endl;
+    //std::cout << "depth" << std::endl;
+    //printPath(searcher.depth_search(10, 73));
+    //std::cout << "breadth" << std::endl;
+    //printPath(searcher.reverse_list(searcher.breadth_search(10, 73)));
 
     //deep 15 41
-    std::cout << "SHORTEST PATH FROM " << 15 << " TO " << 41 << std::endl;
-    std::cout << "depth" << std::endl;
-    printPath(searcher.depth_search(15, 41));
-    std::cout << "breadth" << std::endl;
-    printPath(searcher.reverse_list(searcher.breadth_search(15, 41)));
+    //std::cout << "SHORTEST PATH FROM " << 15 << " TO " << 41 << std::endl;
+    //std::cout << "depth" << std::endl;
+    //printPath(searcher.depth_search(15, 41));
+    //std::cout << "breadth" << std::endl;
+    //printPath(searcher.reverse_list(searcher.breadth_search(15, 41)));
 
 
     return 0;
