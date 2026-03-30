@@ -36,6 +36,7 @@ private:
     //PRIVATE HELPER
     void depth_helper(std::vector<int>& v, std::unordered_set<int>& visited, int curdepth, int current, int target) {
         //tap out checks
+        if (curdepth > 6){ return; }
         if (curdepth > shortestpath) { return; }
         if (visited.count(current)) { return; } //if count != 0
 
