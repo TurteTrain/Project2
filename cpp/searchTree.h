@@ -5,13 +5,14 @@
 #include <unordered_set>
 #include <iostream>
 #include <climits>
-#include "../cpp/link_data.hpp"
+//#include "../cpp/link_data.hpp"
+#include "parser.h"
 
 struct searchTree{
 private:
     //kept global for depth search
-    int shortestpath = INT_MAX;
-    std::vector<std::vector<int>> paths;
+  std::uint32_t shortestpath = INT_MAX;
+  std::vector<std::vector<std::uint32_t>> paths;
 
     //special node that points to parent needed for breadth search
     struct breadthNode {
@@ -21,8 +22,8 @@ private:
         breadthNode(int _value, breadthNode* _parent): value(_value), parent(_parent){}
     };
 
-    GraphParents graph_parent;
-
+  //GraphParents graph_parent;
+  /*
     std::vector<int> get_parents(int id) {
         std::vector<int> returnVec;
         auto parents = graph_parent[id];
@@ -32,9 +33,12 @@ private:
 
         return returnVec;
     }
+  */
+
+  Parser parser;
 
     //PRIVATE HELPER
-    void depth_helper(std::vector<int>& v, std::unordered_set<int>& visited, int curdepth, int current, int target) {
+  void depth_helper(std::vector<std::uint32_t>& v, std::unordered_set<std::uint32_t>& visited, int curdepth, std::uint32_t current, std::uint32_t target) {
         //tap out checks
         if (curdepth > shortestpath) { return; }
         if (visited.count(current)) { return; } //if count != 0
@@ -56,8 +60,8 @@ private:
 
         //recurse
         visited.insert(current);
-        std::vector<int> children = get_parents(current);
-        for (int child: children) {
+        std::vector<std::uint32_t> children = parser.get_parents(current);
+        for (std::uint32_t child: children) {
             depth_helper(v, visited, curdepth + 1, child, target);
         }
         //wrap up recurse
@@ -67,7 +71,7 @@ private:
 
 
 public:
-    explicit searchTree() : graph_parent("db/links.bin", "db/link_offsets.bin") {}
+  //explicit searchTree() : graph_parent("db/links.bin", "db/link_offsets.bin") {}
 
     //searchTree()= default;
     ~searchTree() = default;
@@ -79,32 +83,32 @@ public:
     //---------------------------------------------------------------------------------------------
 
     //depth first search
-    std::vector<std::vector<int>> depth_search(int start, int target){
+  std::vector<std::vector<std::uint32_t>> depth_search(std::uint32_t start, std::uint32_t target){
         //containers to be reused
-        std::vector<int> path;
-        std::unordered_set<int> localvisited;
+    std::vector<std::uint32_t> path;
+    std::unordered_set<std::uint32_t> localvisited;
 
         //first function call
         depth_helper(path, localvisited, 0, start, target);
 
         //clean up and return
-        std::vector<std::vector<int>> pathscopy = paths;
+        std::vector<std::vector<std::uint32_t>> pathscopy = paths;
         shortestpath = INT_MAX;
         paths.clear();
         return pathscopy;
     }
 
     //breadth first search
-    std::vector<std::vector<int>> breadth_search(int start, int target){
-        std::vector<std::vector<int>> localpaths;
-        std::unordered_set<int> localvisited = {start};
-        std::vector<int> toSearch = {start};
-        std::vector<int> nextLevel;
+  std::vector<std::vector<std::uint32_t>> breadth_search(std::uint32_t start, std::uint32_t target){
+    std::vector<std::vector<std::uint32_t>> localpaths;
+    std::unordered_set<std::uint32_t> localvisited = {start};
+    std::vector<std::uint32_t> toSearch = {start};
+    std::vector<std::uint32_t> nextLevel;
         bool search = true;
 
         breadthNode* root = new breadthNode(start, nullptr);
         breadthNode* currentNode = root;
-        std::vector<breadthNode*> parentNodes;
+        std::vector<breadthNode*> parentNodes = {root};
         int i = 0;
 
         //for deletion
@@ -112,11 +116,11 @@ public:
 
         while (search) {
             std::vector<breadthNode*> childrenNodes;
-            for (int current: toSearch) {
-                    std::vector<int> children = get_parents(current);
+            for (std::uint32_t current: toSearch) {
+	      std::vector<std::uint32_t> children = parser.get_parents(current);
                     currentNode = parentNodes.at(i);
                     i++;
-                    for (int child: children) {
+                    for (std::uint32_t child: children) {
                         breadthNode* childNode = new breadthNode(child, currentNode);
                         if (child == target) {
                             childNode->marked = true;
@@ -148,7 +152,7 @@ public:
         //we now have to build each path
         for (breadthNode* node: parentNodes) {
             if (node->marked == true) {
-                std::vector<int> tempPath;
+	      std::vector<std::uint32_t> tempPath;
                 while (node) { //while node isn't nullptr
                     tempPath.push_back(node->value);
                     node = node->parent;
@@ -161,16 +165,15 @@ public:
         for (breadthNode* node: deletionQueue) {
             delete node;
         }
-        delete root;
         //------------
 
         return localpaths;
     }
 
-    std::vector<std::vector<int>> reverse_list(const std::vector<std::vector<int>>& v) {
-        std::vector<std::vector<int>> retVec;
-        for (std::vector<int> path: v) {
-            std::vector<int> tempPath;
+  std::vector<std::vector<std::uint32_t>> reverse_list(const std::vector<std::vector<std::uint32_t>>& v) {
+    std::vector<std::vector<std::uint32_t>> retVec;
+        for (std::vector<std::uint32_t> path: v) {
+	  std::vector<std::uint32_t> tempPath;
             for (int i = path.size() - 1; i >= 0; i--) {
                 tempPath.push_back(path.at(i));
             }
