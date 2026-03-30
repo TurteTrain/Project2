@@ -3,8 +3,10 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "../cpp/parser.h"
 
-void process_title(std::string &title) {
+// removes underscores into spaces and formats special characters
+void Parser::process_title(std::string &title) {
   for(std::size_t i = 0; i < title.size(); ++i) {
     if(title[i] == '_') {
       title[i] = ' ';
@@ -22,7 +24,7 @@ void process_title(std::string &title) {
 }
 
 // returns the index where the title field ends
-std::size_t find_quote_end(const std::string& line, size_t start) {
+std::size_t Parser::find_quote_end(const std::string& line, size_t start) {
   size_t quote_start = line.find('\'', start);
   if(quote_start != std::string::npos) {
     size_t quote_next = line.find('\'', quote_start + 1);
@@ -41,16 +43,16 @@ std::size_t find_quote_end(const std::string& line, size_t start) {
   return std::string::npos;
 }
 
-void parse_pages() {
+void Parser::parse_pages() {
   // CHANGE TO NAME OF page.sql FILE
-  std::ifstream file("enwiki-20260301-page.sql");
+  std::ifstream input_file("enwiki-20260301-page.sql");
   std::ofstream articles_file("articles.bin", std::ios::binary);
   std::ofstream offsets_file("article_offsets.bin", std::ios::binary);
   
   std::string line;
 
   do {
-    std::getline(file, line);
+    std::getline(input_file, line);
   }
   while(line.find("INSERT") == std::string::npos);
   
@@ -99,45 +101,49 @@ void parse_pages() {
       pos = end + 1;
     }
   }
-  while(getline(file, line));
+  while(getline(input_file, line));
 }
 
 // internal test method
-void read_pages_binary(unsigned int id) {
-  std::ifstream articles_file("articles.bin", std::ios::binary);
-  std::ifstream offsets_file("article_offsets.bin", std::ios::binary);
+std::string Parser::get_title(std::uint32_t id) {
+  std::ifstream articles_file("../db/articles.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/article_offsets.bin", std::ios::binary);
 
+  if(!(articles_file && offsets_file)) {
+    std::cout << "ERROR opening files" << std::endl;
+    return "";
+  }
   unsigned int offset = 0;
   uint8_t length = 0;
   offsets_file.seekg(id * (sizeof(offset) + sizeof(length)), std::ios::beg);
   offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(id));
   offsets_file.read(reinterpret_cast<char*>(&length), sizeof(length));
-
-  std::cout << "offset: " << offset << std::endl;
-  std::cout << "length: " << std::to_string(length) << std::endl;
   
   articles_file.seekg(offset, std::ios::beg);
   std::string title(length, '\0');
   articles_file.read(&title[0], length);
-  std::cout << title << std::endl;
+  return title;
 }
 
 // internal test method
-void read_links_binary(std::uint32_t id) {
-  std::ifstream links_file("links.bin", std::ios::binary);
-  std::ifstream offsets_file("link_offsets.bin", std::ios::binary);
+std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
+  std::ifstream links_file("../db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
 
+  std::vector<std::uint32_t> links;
+  
+  if(!(links_file && offsets_file)) {
+    std::cout << "ERROR opening files" << std::endl;
+  }
   std::uint32_t offset = 0;
   std::uint32_t next_offset = 0;
   offsets_file.seekg((id) * sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&next_offset), sizeof(next_offset));
-  std::cout << "OFFSET" << std::to_string(offset) << std::endl;
-  std::cout << "NEXT_OFFSET" << std::to_string(next_offset) << std::endl;
   links_file.seekg(offset, std::ios::beg);
+  
   std::size_t length = (next_offset - offset) / 3;
-  std::vector<std::uint32_t> links(length);
-  std::cout << "length " << links.size() << std::endl;
+  std::vector<std::uint32_t> links;
 
   for(std::size_t i = 0; i < length; ++i) {
     unsigned char bytes[3];
@@ -146,16 +152,10 @@ void read_links_binary(std::uint32_t id) {
     std::uint32_t from_id = (std::uint32_t(bytes[0])) | (std::uint32_t(bytes[1]) << 8) | (std::uint32_t(bytes[2]) << 16);
     links.push_back(from_id);
   }
-
-  std::cout << "ID: " << std::to_string(id) << std::endl;
-  std::cout << "Linked from ";
-    for(auto l : links) {
-    std::cout << l << ", ";
-  }
-  std::cout << "\n\n" << std::endl;
+  return links;
 }
 
-std::uint32_t find_first_id(const std::string& line) {
+std::uint32_t Parser::find_first_id(const std::string& line) {
   std::size_t end = line.find(')');
   std::size_t c1 = line.find(',');
   std::size_t c2 = line.find(',', c1 + 1);
@@ -163,32 +163,32 @@ std::uint32_t find_first_id(const std::string& line) {
   return static_cast<uint32_t>(std::stoi(line.substr(c2 + 1, end - c2)));
 }
 
-void print_binary() {
-  std::ifstream links_file("links.bin", std::ios::binary);
-  std::ifstream offsets_file("link_offsets.bin", std::ios::binary);
+// internal test method, prints every offset
+void Parser::print_binary() {
+  std::ifstream links_file("../db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
   std::uint32_t offset = 0;
-  for(int i = 0; i < 10; ++i) {
-    offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
+  
+  while(offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset))) {
     std::cout << offset << std::endl;
-  } 
+  }
 }
-void parse_pagelinks() {
-  std::ifstream file("enwiki-20260301-pagelinks.sql");
+
+void Parser::parse_pagelinks() {
+  std::ifstream input_file("enwiki-20260301-pagelinks.sql");
   std::ofstream  links_file("links.bin", std::ios::binary);
   std::ofstream offsets_file("link_offsets.bin", std::ios::binary);
   
   std::string line;
   do {
-    std::getline(file, line);
+    std::getline(input_file, line);
   }
   while(line.find("INSERT") == std::string::npos);
 
   std::uint32_t real_position = 0;
   std::uint32_t offset_position = 0;
-  size_t last_id = 2; //find_first_id(line);
-  std::cout << std::to_string(last_id);
+  size_t last_id = find_first_id(line);
   
-
   std::vector<std::uint32_t> links;
   
   do {
@@ -238,7 +238,7 @@ void parse_pagelinks() {
 	 
     }
   }
-  while(std::getline(file, line));
+  while(std::getline(input_file, line));
   
   // dumps the remaining links
   for(std::uint32_t id : links) {
@@ -253,15 +253,4 @@ void parse_pagelinks() {
     offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
     real_position++;
   }
-}
- 
-int main() {
-  //parse_pages();
-  //parse_pagelinks();
-  print_binary();
-  read_links_binary(2);
-  //std::vector<std::uint32_t> vec = {1, 2, 3, 4, 5};
-  //vec.clear();
-  //std::cout << vec.size();
-  return 0;
 }
