@@ -31,15 +31,19 @@ std::size_t Parser::find_quote_end(const std::string& line, size_t start) {
     bool in_quotes = true;
     while(in_quotes) {
       if(line.at(quote_next - 1) != '\\') {
+	std::cout << "SUBSTR: " << line.substr(quote_start, line.size() - quote_next - quote_start) << std::endl; 
+	if(line.substr(quote_start, line.size() - quote_next - quote_start) == "'(\\\\'") {
+	  return quote_next;
+	}
 	in_quotes = false;
       }
       else {
 	quote_next = line.find('\'', quote_next + 1);
       }
     }
-    return quote_next;
-    
+    return quote_next; 
   }
+  
   return std::string::npos;
 }
 
@@ -286,4 +290,89 @@ void Parser::make_file_smaller() {
     links_file << line << std::endl;
   }
   while(line.find("INSERT") == std::string::npos);
+}
+
+void Parser::parse_pageid_map() {
+  // CHANGE TO NAME OF page.sql FILE
+  std::ifstream input_file("enwiki-20260301-page.sql");
+  std::ofstream map_file("pageid_map.txt");
+  std::string line;
+  do {
+    std::getline(input_file, line);
+  }
+  while(line.find("INSERT") == std::string::npos);
+
+  do {
+    std::size_t pos = 0;
+    while((pos = line.find('(', pos)) != std::string::npos){
+      std::size_t quote_end = find_quote_end(line, pos);
+      if(quote_end == std::string::npos) {
+	break;
+      }
+      std::size_t end = line.find(')', quote_end);
+      if(end == std::string::npos) {break;}
+      std::string tuple = line.substr(pos + 1, end - pos - 1);
+      std::size_t c1 = tuple.find(',');
+      std::uint32_t id = stoi(tuple.substr(0, c1));
+      std::size_t c2 = tuple.find(',', c1 + 1);
+      int name_space = stoi(tuple.substr(c1 + 1, c2 - c1 - 1));
+      // ignore entries that are not part of the main wikipedia
+      if(name_space != 0) {
+	pos = end + 1;
+	continue;
+      }
+      std::size_t quote_start = tuple.find('\'', c1);
+      quote_end = find_quote_end(tuple, 0);
+      std::string title = tuple.substr(quote_start + 1, quote_end - quote_start - 1);
+      std::cout << "ID: " << std::to_string(id) << std::endl;
+      std::cout << "Title: " << title << "\n" << std::endl;
+            
+      map_file << title << "#" << std::to_string(id) << "\n"; 
+      pos = end + 1;
+    }
+  }
+  while(getline(input_file, line)); 
+}
+
+void Parser::parse_linkid_map() {
+  // CHANGE TO NAME OF page.sql FILE
+  std::ifstream input_file("enwiki-20260301-linktarget.sql");
+  std::ofstream map_file("linkid_map.txt");
+  std::string line;
+  do {
+    std::getline(input_file, line);
+  }
+  while(line.find("INSERT") == std::string::npos);
+  do {
+    std::size_t pos = 0;
+    while((pos = line.find('(', pos)) != std::string::npos) {
+      std::size_t quote_end = find_quote_end(line, pos);
+      if(quote_end == std::string::npos) {
+	break;
+      }
+      std::size_t end = line.find(')', quote_end);
+      if(end == std::string::npos) {break;}
+      std::string tuple = line.substr(pos + 1, end - pos - 1);
+      std::size_t c1 = tuple.find(',');
+      std::uint32_t id = stoi(tuple.substr(0, c1));
+      std::size_t c2 = tuple.find(',', c1 + 1);
+      int name_space = stoi(tuple.substr(c1 + 1, c2 - c1 - 1));
+      
+      // ignore entries that are not part of the main wikipedia
+      if(name_space != 0) {
+	pos = end + 1;
+	continue;
+      }
+      
+      std::size_t quote_start = tuple.find('\'', c1);
+      quote_end = find_quote_end(tuple, 0);
+      std::string title = tuple.substr(quote_start + 1, quote_end - quote_start - 1);
+      std::cout << "ID: " << std::to_string(id) << std::endl;
+      std::cout << "Title: " << title << "\n" << std::endl;
+      std::cout << "TUPLE: " << tuple << "\n" << std::endl;
+      map_file << title << "#" << std::to_string(id) << "\n";
+      pos = end + 1;
+    }
+  }
+  while(getline(input_file, line));
 }

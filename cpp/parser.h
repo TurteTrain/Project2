@@ -13,6 +13,8 @@ public:
   void print_binary();
   void parse_pages();
   void parse_pagelinks();
+  void parse_pageid_map();
+  void parse_linkid_map();
   // return the title of the page at index id
   static std::string get_title(std::uint32_t id);
   // return the parents of an article, given its id
