@@ -6,7 +6,7 @@
 #include <iostream>
 #include <climits>
 //#include "../cpp/link_data.hpp"
-#include "../cpp/parser.h"
+#include "parser.h"
 
 struct searchTree{
 private:
@@ -117,34 +117,34 @@ public:
         while (search) {
             std::vector<breadthNode*> childrenNodes;
             for (std::uint32_t current: toSearch) {
-	      std::vector<std::uint32_t> children = parser.get_parents(current);
-                    currentNode = parentNodes.at(i);
-                    i++;
-                    for (std::uint32_t child: children) {
-                        breadthNode* childNode = new breadthNode(child, currentNode);
-                        if (child == target) {
-                            childNode->marked = true;
-                            childrenNodes.push_back(childNode);
-                            nextLevel.push_back(child);
-                            deletionQueue.push_back(childNode);
-                            search = false;
-                        }
-                        else if (!localvisited.count(child)) {
-                            childrenNodes.push_back(childNode);
-                            nextLevel.push_back(child);
-                            localvisited.insert(child);
-                            deletionQueue.push_back(childNode);
-                        }
-                        else {
-                            delete childNode;
-                        }
-                    }
+	      std::vector<std::uint32_t> children = parser.get_parents(parser.pageid_to_linkid(current));
+              currentNode = parentNodes.at(i);
+              i++;
+              for (std::uint32_t child: children) {
+		breadthNode* childNode = new breadthNode(child, currentNode);
+		if (child == target) {
+		  childNode->marked = true;
+		  childrenNodes.push_back(childNode);
+		  nextLevel.push_back(child);
+		  deletionQueue.push_back(childNode);
+		  search = false;
+		}
+		else if (!localvisited.count(child)) {
+		  childrenNodes.push_back(childNode);
+		  nextLevel.push_back(child);
+		  localvisited.insert(child);
+		  deletionQueue.push_back(childNode);
+		}
+		else {
+		  delete childNode;
+		}
+	      }
             }
             toSearch = nextLevel;
             nextLevel.clear();
             i = 0;
             if (toSearch.empty()) {
-                search = false;
+	      search = false;
             }
             parentNodes = childrenNodes;
         }

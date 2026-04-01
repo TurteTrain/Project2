@@ -15,10 +15,11 @@ public:
   void parse_pagelinks();
   void parse_pageid_map();
   void parse_linkid_map();
+  void map_ids();
   // return the title of the page at index id
-  static std::string get_title(std::uint32_t id);
+  static std::string get_title(std::uint32_t page_id);
   // return the parents of an article, given its id
   static std::vector<std::uint32_t> get_parents(unsigned int id);
   static std::uint32_t get_id(const std::string& title);
-  
+  static std::uint32_t pageid_to_linkid(std::uint32_t page_id);
 };

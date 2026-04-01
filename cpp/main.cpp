@@ -43,12 +43,19 @@ int main(){
     Parser parser;
 
     //many path 0->84
-    std::cout << "SHORTEST PATH FROM " << 0 << " TO " << 24 << std::endl;
-    std::cout << "depth" << std::endl;
+    //std::cout << "SHORTEST PATH FROM " << 0 << " TO " << 24 << std::endl;
+    //std::cout << "depth" << std::endl;
+    //parser.parse_pageid_map();
+    //parser.map_ids();
 
+    //parser.make_file_smaller();
     //Timer.unpause();
-    printPath(searcher.breadth_search(9228, 22834));
-    printPath(searcher.breadth_search(223834, 9228));
+    std::uint32_t start = parser.pageid_to_linkid(9228);
+    std::uint32_t end = parser.pageid_to_linkid(38930);
+    printPath(searcher.breadth_search(start, end));
+    //printPath(searcher.breadth_search(223834, 9228));
+    //parser.get_parents(10866);
+    //std::cout << "TEST TITLE " << parser.get_title(18624) << std::endl;
     //std::cout << "breadth" << std::endl;
     //printPath(searcher.reverse_list(searcher.breadth_search(2, )));
     //Timer.printTime();

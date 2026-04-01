@@ -30,14 +30,17 @@ std::size_t Parser::find_quote_end(const std::string& line, size_t start) {
     size_t quote_next = line.find('\'', quote_start + 1);
     bool in_quotes = true;
     while(in_quotes) {
-      if(line.at(quote_next - 1) != '\\') {
-	std::cout << "SUBSTR: " << line.substr(quote_start, line.size() - quote_next - quote_start) << std::endl; 
-	if(line.substr(quote_start, line.size() - quote_next - quote_start) == "'(\\\\'") {
-	  return quote_next;
+	//std::cout << "SUBSTR: " << line.substr(quote_start, line.size() - quote_next - quote_start) << std::endl;
+	std::size_t i = quote_next;
+	std::size_t backslash_count = 0;
+	while(i > quote_start && line[i - 1] == '\\') {
+	  backslash_count++;
+	  i--;
 	}
-	in_quotes = false;
-      }
-      else {
+	if(backslash_count % 2 == 0) {
+	  in_quotes = false;
+	}
+	else {
 	quote_next = line.find('\'', quote_next + 1);
       }
     }
@@ -174,10 +177,12 @@ std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
     links_file.read(reinterpret_cast<char*>(bytes), 3);
 
     std::uint32_t from_id = (std::uint32_t(bytes[0])) | (std::uint32_t(bytes[1]) << 8) | (std::uint32_t(bytes[2]) << 16);
-    links.push_back(from_id);
-    std::cout << "Parent: " << get_title(from_id) << std::endl;
+    if(from_id <= 41803) {
+      links.push_back(from_id);
+    }
+    //std::cout << "Parent: " << get_title(from_id) << std::endl;
   }
-  std::cout << "\n\n" << links.size() << std::endl;
+  std::cout << "Got parents \n\n" << links.size() << std::endl;
   return links;
 }
 
@@ -369,10 +374,50 @@ void Parser::parse_linkid_map() {
       std::string title = tuple.substr(quote_start + 1, quote_end - quote_start - 1);
       std::cout << "ID: " << std::to_string(id) << std::endl;
       std::cout << "Title: " << title << "\n" << std::endl;
-      std::cout << "TUPLE: " << tuple << "\n" << std::endl;
+      //std::cout << "TUPLE: " << tuple << "\n" << std::endl;
       map_file << title << "#" << std::to_string(id) << "\n";
       pos = end + 1;
     }
   }
   while(getline(input_file, line));
+}
+
+void Parser::map_ids() {
+  std::ifstream pageid_map("pageid_map.txt");
+  std::ifstream linkid_map("linkid_map.txt");
+  std::ofstream linkid_file("linkids.bin", std::ios::binary);
+  std::string page_line;
+  std::uint32_t index = 0;
+  while(getline(pageid_map, page_line)) {
+    std::uint32_t page_divider = page_line.find('#');
+    std::string page_title = page_line.substr(0, page_divider);
+    std::uint32_t page_id = static_cast<std::uint32_t>(stoi(page_line.substr(page_divider + 1)));
+
+    std::string link_line;
+    std::cout << "Searching for: " << page_title << " ..." << std::endl;
+    while(getline(linkid_map, link_line)) {
+	std::uint32_t link_divider = link_line.find('#');
+	std::string link_title = link_line.substr(0, link_divider);
+	std::uint32_t link_id = static_cast<std::uint32_t>(stoi(link_line.substr(link_divider + 1)));
+	if(page_title == link_title) {
+	  std::cout << "\tFOUND: " << link_title << std::endl;
+	  while(index <= page_id) {
+	    index++;
+	    linkid_file.write(reinterpret_cast<const char*>(&link_id), sizeof(link_id));
+	  }
+	  //linkid_file << std::to_string(page_id) << ":" << std::to_string(link_id) << "\n";
+	  break;
+	}
+    }
+    linkid_map.clear();
+    linkid_map.seekg(0, std::ios::beg);
+  }
+}
+
+std::uint32_t Parser::pageid_to_linkid(std::uint32_t page_id) {
+  std::ifstream input_file("linkids.bin", std::ios::binary);
+  std::uint32_t link_id = 0;
+  input_file.seekg(page_id * sizeof(link_id));
+  input_file.read(reinterpret_cast<char *>(&link_id), sizeof(link_id));
+  return link_id;
 }
