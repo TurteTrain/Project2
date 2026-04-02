@@ -63,8 +63,8 @@ void Parser::parse_pages() {
   }
   while(line.find("INSERT") == std::string::npos);
   
-  int real_position = 0;
-  unsigned int offset_position = 0;
+  std::uint32_t real_position = 0;
+  std::uint32_t offset_position = 0;
   do { 
     std::size_t pos = 0;
     
@@ -77,10 +77,10 @@ void Parser::parse_pages() {
       std::string tuple = line.substr(pos + 1, end - pos - 1);
       
       std::size_t c1 = tuple.find(',');
-      std::uint32_t id = stoi(tuple.substr(0, c1));
+      std::uint32_t id = static_cast<std::uint32_t>(stoi(tuple.substr(0, c1)));
       
       std::size_t c2 = tuple.find(',', c1 + 1);
-      int name_space = stoi(tuple.substr(c1 + 1, c2 - c1 - 1));
+      std::uint32_t name_space = static_cast<std::uint32_t>(stoi(tuple.substr(c1 + 1, c2 - c1 - 1)));
       
       // ignore etries that are not part of the main wikipedia
       if(name_space != 0) {
@@ -162,7 +162,7 @@ std::vector<std::uint32_t> Parser::get_parents(std::uint32_t link_id) {
     return links;
   }
   
-  std::uint32_t offset = 0;
+  std::uint64_t offset = 0;
   std::uint32_t length = 0;
   offsets_file.seekg((link_id) * sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
@@ -171,10 +171,9 @@ std::vector<std::uint32_t> Parser::get_parents(std::uint32_t link_id) {
   
   std::cout << "Length: " << length << std::endl;
   for(std::size_t i = 0; i < length; ++i) {
-    unsigned char bytes[3];
-    links_file.read(reinterpret_cast<char*>(bytes), 3);
+    std::uint32_t from_id = 0;
+    links_file.read(reinterpret_cast<char*>(&from_id), sizeof(from_id));
 
-    std::uint32_t from_id = (std::uint32_t(bytes[0])) | (std::uint32_t(bytes[1]) << 8) | (std::uint32_t(bytes[2]) << 16);
     //if(from_id <= 46114) {
       links.push_back(from_id);
       std::cout << "Parent: " << std::to_string(from_id) << " " << get_title(from_id) << std::endl;
@@ -215,7 +214,7 @@ void Parser::parse_pagelinks() {
   while(line.find("INSERT") == std::string::npos);
 
   std::uint32_t real_position = 0;
-  std::uint32_t offset_position = 0;
+  std::uint64_t offset_position = 0;
   std::uint32_t last_id = find_first_id(line);
   
   std::vector<std::uint32_t> links;
@@ -244,48 +243,36 @@ void Parser::parse_pagelinks() {
       }
       else {
 	std::uint32_t length = links.size();
- 
-	for(std::uint32_t id : links) {
-	  std::uint32_t mask = id & 0xFFFFFF;
-	  unsigned char bytes[3];
-	  bytes[0] = mask & 0xFF;
-	  bytes[1] = (mask >> 8) & 0xFF;
-	  bytes[2] = (mask >> 16) & 0xFF;
-
-	  links_file.write(reinterpret_cast<char*>(bytes), 3);
-	  
+	for(std::uint32_t page_id : links) {
+	  links_file.write(reinterpret_cast<const char*>(&page_id), sizeof(page_id));
 	}
+	
 	while(real_position <= last_id) {
 	  offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
 	  offsets_file.write(reinterpret_cast<const char*>(&length), sizeof(length));
 	  
 	  real_position++;
 	}
-	offset_position += length  * 3;
+	offset_position += length  * sizeof(std::uint32_t);
 	links.clear();
 	links.push_back(from_id);
 	last_id = to_id;
       }
-
       pos = end + 1;
-	 
     }
   }
+  
   while(std::getline(input_file, line));
   
   // dumps the remaining links
-  for(std::uint32_t id : links) {
-    std::uint32_t mask = id & 0xFFFFFF;
-    unsigned char bytes[3];
-    bytes[0] = mask & 0xFF;
-    bytes[1] = (mask >> 8) & 0xFF;
-    bytes[2] = (mask >> 16) & 0xFF;
-    links_file.write(reinterpret_cast<char*>(bytes), 3);
+  for(std::uint32_t page_id : links) {
+    links_file.write(reinterpret_cast<const char*>(&page_id), sizeof(page_id));
   }
+
   std::uint32_t length = links.size();
   while(real_position <= last_id) {
     offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
-    links_file.write(reinterpret_cast<const char*>(&length), sizeof(length));
+    offsets_file.write(reinterpret_cast<const char*>(&length), sizeof(length));
     real_position++;
   }
 }
