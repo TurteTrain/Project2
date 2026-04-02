@@ -151,8 +151,7 @@ std::uint32_t Parser::get_id(const std::string& title) {
 }
 
 
-// internal test method
-std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
+std::vector<std::uint32_t> Parser::get_parents(std::uint32_t link_id) {
   std::ifstream links_file("./db/links.bin", std::ios::binary);
   std::ifstream offsets_file("./db/link_offsets.bin", std::ios::binary);
 
@@ -164,23 +163,22 @@ std::vector<std::uint32_t> Parser::get_parents(unsigned int id) {
   }
   
   std::uint32_t offset = 0;
-  std::uint32_t next_offset = 0;
-  offsets_file.seekg((id) * sizeof(offset));
+  std::uint32_t length = 0;
+  offsets_file.seekg((link_id) * sizeof(offset));
   offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset));
-  offsets_file.read(reinterpret_cast<char*>(&next_offset), sizeof(next_offset));
+  offsets_file.read(reinterpret_cast<char*>(&length), sizeof(length));
   links_file.seekg(offset, std::ios::beg);
   
-  std::size_t length = (next_offset - offset) / 3;
-  std::cout << "CHILD: " << get_title(id) << std::endl;
+  std::cout << "Length: " << length << std::endl;
   for(std::size_t i = 0; i < length; ++i) {
     unsigned char bytes[3];
     links_file.read(reinterpret_cast<char*>(bytes), 3);
 
     std::uint32_t from_id = (std::uint32_t(bytes[0])) | (std::uint32_t(bytes[1]) << 8) | (std::uint32_t(bytes[2]) << 16);
-    if(from_id <= 41803) {
+    //if(from_id <= 46114) {
       links.push_back(from_id);
-    }
-    //std::cout << "Parent: " << get_title(from_id) << std::endl;
+      std::cout << "Parent: " << std::to_string(from_id) << " " << get_title(from_id) << std::endl;
+      //}
   }
   std::cout << "Got parents \n\n" << links.size() << std::endl;
   return links;
@@ -196,8 +194,8 @@ std::uint32_t Parser::find_first_id(const std::string& line) {
 
 // internal test method, prints every offset
 void Parser::print_binary() {
-  std::ifstream links_file("../db/links.bin", std::ios::binary);
-  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
+  std::ifstream links_file("./db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("./db/link_offsets.bin", std::ios::binary);
   std::uint32_t offset = 0;
   
   while(offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset))) {
@@ -207,8 +205,8 @@ void Parser::print_binary() {
 
 void Parser::parse_pagelinks() {
   std::ifstream input_file("enwiki-20260301-pagelinks.sql");
-  std::ofstream  links_file("links.bin", std::ios::binary);
-  std::ofstream offsets_file("link_offsets.bin", std::ios::binary);
+  std::ofstream  links_file("./db/links.bin", std::ios::binary);
+  std::ofstream offsets_file("./db/link_offsets.bin", std::ios::binary);
   
   std::string line;
   do {
@@ -218,7 +216,7 @@ void Parser::parse_pagelinks() {
 
   std::uint32_t real_position = 0;
   std::uint32_t offset_position = 0;
-  size_t last_id = find_first_id(line);
+  std::uint32_t last_id = find_first_id(line);
   
   std::vector<std::uint32_t> links;
   
@@ -245,6 +243,8 @@ void Parser::parse_pagelinks() {
 	links.push_back(from_id);
       }
       else {
+	std::uint32_t length = links.size();
+ 
 	for(std::uint32_t id : links) {
 	  std::uint32_t mask = id & 0xFFFFFF;
 	  unsigned char bytes[3];
@@ -257,14 +257,16 @@ void Parser::parse_pagelinks() {
 	}
 	while(real_position <= last_id) {
 	  offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
+	  offsets_file.write(reinterpret_cast<const char*>(&length), sizeof(length));
+	  
 	  real_position++;
 	}
-	offset_position += links.size() * 3;
+	offset_position += length  * 3;
 	links.clear();
 	links.push_back(from_id);
+	last_id = to_id;
       }
 
-      last_id = to_id;
       pos = end + 1;
 	 
     }
@@ -280,8 +282,10 @@ void Parser::parse_pagelinks() {
     bytes[2] = (mask >> 16) & 0xFF;
     links_file.write(reinterpret_cast<char*>(bytes), 3);
   }
+  std::uint32_t length = links.size();
   while(real_position <= last_id) {
     offsets_file.write(reinterpret_cast<const char*>(&offset_position), sizeof(offset_position));
+    links_file.write(reinterpret_cast<const char*>(&length), sizeof(length));
     real_position++;
   }
 }
