@@ -53,9 +53,9 @@ std::size_t Parser::find_quote_end(const std::string& line, size_t start) {
 
 void Parser::parse_pages() {
   // CHANGE TO NAME OF page.sql FILE
-  std::ifstream input_file("./db/enwiki-20260301-page.sql");
-  std::ofstream articles_file("./db/articles.bin", std::ios::binary);
-  std::ofstream offsets_file("./db/article_offsets.bin", std::ios::binary);
+  std::ifstream input_file("../db/enwiki-20260301-page.sql");
+  std::ofstream articles_file("../db/articles.bin", std::ios::binary);
+  std::ofstream offsets_file("../db/article_offsets.bin", std::ios::binary);
   if(!input_file) {
     std::cout << "ERROR:\tunable to access page.sql file" << std::endl;
     return;
@@ -125,8 +125,8 @@ void Parser::parse_pages() {
 
 // internal test method
 std::string Parser::get_title(std::uint32_t id) {
-  std::ifstream articles_file("./db/articles.bin", std::ios::binary);
-  std::ifstream offsets_file("./db/article_offsets.bin", std::ios::binary);
+  std::ifstream articles_file("../db/articles.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/article_offsets.bin", std::ios::binary);
 
   if(!(articles_file && offsets_file)) {
     std::cout << "ERROR opening files" << std::endl;
@@ -145,8 +145,8 @@ std::string Parser::get_title(std::uint32_t id) {
 }
 
 std::uint32_t Parser::get_id(const std::string& title) {
-  std::ifstream articles_file("./db/articles.bin", std::ios::binary);
-  std::ifstream offsets_file("./db/article_offsets.bin", std::ios::binary);
+  std::ifstream articles_file("../db/articles.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/article_offsets.bin", std::ios::binary);
   if(!(articles_file && offsets_file)) {
     std::cout << "ERROR opening files" << std::endl;
     return 0;
@@ -164,8 +164,8 @@ std::uint32_t Parser::get_id(const std::string& title) {
 
 
 std::vector<std::uint32_t> Parser::get_parents(std::uint32_t link_id) {
-  std::ifstream links_file("./db/links.bin", std::ios::binary);
-  std::ifstream offsets_file("./db/link_offsets.bin", std::ios::binary);
+  std::ifstream links_file("../db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
 
   std::vector<std::uint32_t> links;
   
@@ -204,8 +204,8 @@ std::uint32_t Parser::find_first_id(const std::string& line) {
 
 // internal test method, prints every offset
 void Parser::print_binary() {
-  std::ifstream links_file("./db/links.bin", std::ios::binary);
-  std::ifstream offsets_file("./db/link_offsets.bin", std::ios::binary);
+  std::ifstream links_file("../db/links.bin", std::ios::binary);
+  std::ifstream offsets_file("../db/link_offsets.bin", std::ios::binary);
   std::uint32_t offset = 0;
   
   while(offsets_file.read(reinterpret_cast<char*>(&offset), sizeof(offset))) {
@@ -214,9 +214,9 @@ void Parser::print_binary() {
 }
 
 void Parser::parse_pagelinks() {
-  std::ifstream input_file("./db/enwiki-20260301-pagelinks.sql");
-  std::ofstream  links_file("./db/links.bin", std::ios::binary);
-  std::ofstream offsets_file("./db/link_offsets.bin", std::ios::binary);
+  std::ifstream input_file("../db/enwiki-20260301-pagelinks.sql");
+  std::ofstream  links_file("../db/links.bin", std::ios::binary);
+  std::ofstream offsets_file("../db/link_offsets.bin", std::ios::binary);
   if(!input_file) {
     std::cout << "ERROR:\tunable to access pagelinks.sql file" << std::endl;
     return;
@@ -314,8 +314,8 @@ void Parser::make_file_smaller() {
 
 void Parser::parse_pageid_map() {
   // CHANGE TO NAME OF page.sql FILE
-  std::ifstream input_file("./db/enwiki-20260301-page.sql");
-  std::ofstream map_file("./db/pageid_map.txt");
+  std::ifstream input_file("../db/enwiki-20260301-page.sql");
+  std::ofstream map_file("../db/pageid_map.txt");
   std::string line;
   if(!input_file) {
     std::cout << "ERROR:\tunable to access page.sql file" << std::endl;
@@ -365,8 +365,8 @@ void Parser::parse_pageid_map() {
 
 void Parser::parse_linkid_map() {
   // CHANGE TO NAME OF page.sql FILE
-  std::ifstream input_file("./db/enwiki-20260301-linktarget.sql");
-  std::ofstream map_file("./db/linkid_map.txt");
+  std::ifstream input_file("../db/enwiki-20260301-linktarget.sql");
+  std::ofstream map_file("../db/linkid_map.txt");
   if(!input_file) {
     std::cout << "ERROR:\tunable to access linktarget.sql file" << std::endl;
     return;
@@ -418,9 +418,9 @@ void Parser::parse_linkid_map() {
 
 // asumes that parse_linkid_map and parse_pageid_map have been run;
 void Parser::map_ids() {
-  std::ifstream pageid_file("./db/pageid_map.txt");
-  std::ifstream linkid_input("./db/linkid_map.txt");
-  std::ofstream linkid_output("./db/linkids.bin", std::ios::binary);
+  std::ifstream pageid_file("../db/pageid_map.txt");
+  std::ifstream linkid_input("../db/linkid_map.txt");
+  std::ofstream linkid_output("../db/linkids.bin", std::ios::binary);
 
   if(!(pageid_file && linkid_input)) {
     std::cout << "ERROR:\tunable to access input files" << std::endl;;
@@ -458,7 +458,7 @@ void Parser::map_ids() {
 }
 
 std::uint32_t Parser::pageid_to_linkid(std::uint32_t page_id) {
-  std::ifstream input_file("./db/linkids.bin", std::ios::binary);
+  std::ifstream input_file("../db/linkids.bin", std::ios::binary);
   std::uint32_t link_id = 0;
   input_file.seekg(page_id * sizeof(link_id));
   input_file.read(reinterpret_cast<char *>(&link_id), sizeof(link_id));
@@ -466,7 +466,7 @@ std::uint32_t Parser::pageid_to_linkid(std::uint32_t page_id) {
 }
 
 std::unordered_map<std::string, std::uint32_t> Parser::get_articles_map() {
-  std::ifstream pageid_file("./db/pageid_map.txt");
+  std::ifstream pageid_file("../db/pageid_map.txt");
   if(!pageid_file) {
     std::cout << "ERROR: unable to access pageid_map.txt" << std::endl;
   }

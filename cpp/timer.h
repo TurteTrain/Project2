@@ -22,6 +22,7 @@ public:
     void pause() {
         if (paused){ return; }
         pausedStart = std::chrono::high_resolution_clock::now();
+        extraTime = 0;
         paused = true;
     }
 
@@ -33,15 +34,15 @@ public:
     }
 
     int timeElapsed() {
-        int retVal = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - start).count() - extraTime;
+        int retVal = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() - extraTime;
         return retVal;
     }
 
-    int nano() {
+    int micro() {
         return timeElapsed();
     }
 
     void printTime() {
-        std::cout << nano() << " nanoseconds" << std::endl;
+        std::cout << micro() << " microseconds" << std::endl;
     }
 };

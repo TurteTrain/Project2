@@ -40,6 +40,7 @@ private:
     //PRIVATE HELPER
   void depth_helper(std::vector<std::uint32_t>& v, std::unordered_set<std::uint32_t>& visited, int curdepth, std::uint32_t current, std::uint32_t target) {
         //tap out checks
+        if(curdepth > 2){ return; }
         if (curdepth > shortestpath) { return; }
         if (visited.count(current)) { return; } //if count != 0
 
@@ -60,7 +61,7 @@ private:
 
         //recurse
         visited.insert(current);
-        std::vector<std::uint32_t> children = parser.get_parents(current);
+        std::vector<std::uint32_t> children = parser.get_parents(parser.pageid_to_linkid(current));
         for (std::uint32_t child: children) {
             depth_helper(v, visited, curdepth + 1, child, target);
         }
