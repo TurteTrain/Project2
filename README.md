@@ -11,5 +11,5 @@ Additionally, download the files in the following link and place them in the db 
 https://uflorida-my.sharepoint.com/:f:/g/personal/ravelo_cristian_ufl_edu/IgBf-jyjnuIRRoBBQs-W06tpAQUStWvqMX5JDAzsrStJREY?e=nrYjhi
 
 # Running
-After seeting up the program, write ./WikiSearch to execute the program on Mac-OS and Linux. On Windows, type ./WikiSearch.exe.
+After setting up the program, write ./WikiSearch to execute the program on Mac-OS and Linux. On Windows, type ./WikiSearch.exe.
 Follow the instructions on the screen to use the program.
