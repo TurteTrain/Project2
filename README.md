@@ -1,6 +1,6 @@
 # WikiSearch
 Made by: Alexander Tuero, Bryan Monroy, Christian Ravelo
-https://docs.google.com/document/d/1HN5msw8BMsisHPMZDes7STOA-ejGsmHyYr40tAiGXyo/edit?tab=t.0
+https://docs.google.com/document/d/1JxES0QlYiTPeoO7aYxbFCRnNXrLZrxZphbm9tmnzW1g/edit?tab=t.0
 
 # Install
 WikiPath is an locally run application that returns the shortest paths from one Wikipedia link to another using internal links.
